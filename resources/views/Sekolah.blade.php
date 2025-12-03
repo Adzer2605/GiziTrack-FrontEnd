@@ -1,26 +1,32 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Sekolah | GiziTrack</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
+
 <body class="flex min-h-screen flex-col bg-gray-50 font-sans">
     <x-header />
     <div class="mt-16 flex flex-1">
         <x-layout />
 
-        <div class="ml-64 flex w-full flex-col px-10 py-10">
-            <div class="mb-8 flex w-full items-center justify-between">
+        <div class="flex w-full flex-col items-center py-10">
+            <div class="mb-8 flex w-4/5 items-center justify-between">
                 <h2 class="text-3xl font-bold text-slate-900">Data Sekolah</h2>
             </div>
 
-            <a href="/sekolah/create" class="mb-8 inline-block w-fit rounded-lg bg-yellow-500 px-6 py-2.5 text-sm font-bold text-black transition-colors hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2">
-                Tambah Data
-            </a>
 
-            <div class="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" id="school-grid">
+            <div class="mb-8 w-4/5">
+                <a href="/sekolah/create"
+                    class="inline-block w-fit rounded-lg bg-yellow-500 px-6 py-2.5 text-sm font-bold text-black transition-colors hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2">
+                    Tambah Data
+                </a>
+            </div>
+
+            <div class="grid w-4/5 grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" id="school-grid">
                 <!-- School cards will be populated here -->
             </div>
         </div>
@@ -50,4 +56,5 @@
         });
     </script>
 </body>
+
 </html>
