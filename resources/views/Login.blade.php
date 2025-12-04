@@ -6,56 +6,41 @@
   <title>Login | GiziTrack</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="flex min-h-screen w-full flex-col md:flex-row">
-  <!-- Left Section (Form) -->
-  <div class="flex flex-1 flex-col items-center justify-center bg-slate-900 p-8 text-center md:p-12">
-    <div class="w-full max-w-md">
-      <h2 class="mb-8 text-3xl font-bold text-white">Gizi Track</h2>
+
+<body class="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#B2EBF2] to-[#B2DFDB] font-sans">
+
+  <div class="flex w-full max-w-[400px] flex-col items-center rounded-[20px] bg-white px-8 py-10 shadow-[0_4px_15px_rgba(0,0,0,0.1)]">
+    <img src="{{ asset('images/GiziTrackLogo.png') }}" alt="Logo GiziTrack" class="mb-2 w-20 object-contain">
+    <div class="mb-1 text-[22px] font-bold text-black">Gizi Track</div>
+    <div class="mb-8 text-[28px] font-extrabold text-black">Login</div>
+
+    <form action="{{ route('login.post') }}" method="POST" class="flex w-full flex-col">
+      @csrf
       
-      <form action="{{ route('login.post') }}" method="POST" class="flex flex-col items-center gap-4">
-        @csrf
-        <div class="w-full">
-            <input type="text" 
-                   class="w-full rounded-lg border-none bg-white px-4 py-3 text-center text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                   name="username" 
-                   placeholder="Username" 
-                   required>
-        </div>
-        
-        <div class="w-full">
-            <input type="password" 
-                   class="w-full rounded-lg border-none bg-white px-4 py-3 text-center text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                   name="password" 
-                   placeholder="Password" 
-                   required>
-        </div>
+      <!-- Username Input -->
+      <label class="mb-2 ml-1 text-sm font-bold text-gray-800">Masukkan Username</label>
+      <input type="text" 
+             name="username" 
+             placeholder="Username"
+             class="mb-5 w-full rounded-full border border-gray-800 px-5 py-3 text-base outline-none placeholder-gray-500 focus:border-[#0a1f44] focus:ring focus:ring-[#0a1f44]/30"
+             required>
 
-        <button type="submit" 
-                class="mt-4 w-auto rounded-lg bg-blue-500 px-8 py-2.5 text-base font-bold text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900">
-          Login
-        </button>
-      </form>
+      <!-- Password Input -->
+      <label class="mb-2 ml-1 text-sm font-bold text-gray-800">Masukkan Password</label>
+      <input type="password" 
+             name="password" 
+             placeholder="Password"
+             class="mb-5 w-full rounded-full border border-gray-800 px-5 py-3 text-base outline-none placeholder-gray-500 focus:border-[#0a1f44] focus:ring focus:ring-[#0a1f44]/30"
+             required>
 
-      <div class="mt-6 text-sm text-white">
-        Belum punya akun? <a href="{{ route('register') }}" class="font-bold text-blue-400 hover:underline">Daftar disini</a>
-      </div>
-    </div>
+      <!-- Button Login -->
+      <button type="submit" 
+              class="mt-2 w-[80%] self-center rounded-full bg-[#0a1f44] py-3 text-lg font-bold text-white transition-all duration-300 hover:bg-[#b3e0e5] hover:text-[#0a1f44]">
+        Login
+      </button>
+
+    </form>
   </div>
 
-  <!-- Right Section (Images) -->
-  <div class="flex flex-1 flex-col items-center justify-center bg-white p-8 md:p-12">
-    <div class="flex w-full max-w-lg flex-col gap-6">
-        <img src="{{ asset('images/login-images.webp') }}" alt="Healthy Food" class="h-64 w-full rounded-xl object-cover shadow-lg md:h-80">
-        
-        <div class="flex gap-4">
-            <div class="h-40 w-1/2 overflow-hidden rounded-xl shadow-md">
-                <img src="{{ asset('images/login-images2.webp') }}" alt="Healthy Lifestyle" class="h-full w-full object-cover transition-transform hover:scale-105">
-            </div>
-            <div class="h-40 w-1/2 overflow-hidden rounded-xl shadow-md">
-                <img src="{{ asset('images/login-images3.webp') }}" alt="Nutrition" class="h-full w-full object-cover transition-transform hover:scale-105">
-            </div>
-        </div>
-    </div>
-  </div>
 </body>
 </html>
