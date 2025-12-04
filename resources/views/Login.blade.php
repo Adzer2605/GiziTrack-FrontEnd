@@ -33,9 +33,10 @@
              class="mb-5 w-full rounded-full border border-gray-800 px-5 py-3 text-base outline-none placeholder-gray-500 focus:border-[#0a1f44] focus:ring focus:ring-[#0a1f44]/30"
              required>
 
-      <!-- Button Login -->
+      <!-- Button Login (Sudah Diperpendek) -->
+      <!-- PERUBAHAN: w-[80%] diganti menjadi w-auto px-12 -->
       <button type="submit" 
-              class="mt-2 w-[80%] self-center rounded-full bg-[#0a1f44] py-3 text-lg font-bold text-white transition-all duration-300 hover:bg-[#b3e0e5] hover:text-[#0a1f44]">
+              class="mt-2 w-auto px-12 self-center rounded-full bg-[#0a1f44] py-3 text-lg font-bold text-white transition-all duration-300 hover:bg-[#b3e0e5] hover:text-[#0a1f44]">
         Login
       </button>
 
