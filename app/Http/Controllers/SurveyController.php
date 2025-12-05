@@ -41,6 +41,7 @@ class SurveyController extends Controller
             ]);
         }
 
+        return redirect()->back()->with('success', 'Data survey makanan berhasil disimpan!');
         return redirect()->route('surveyMakanan');
     }
 
