@@ -22,6 +22,29 @@
                 <p class="mt-2 text-gray-500">Laporkan temuan alergi makanan pada siswa di setiap sekolah.</p>
             </div>
 
+            <!-- notifikasi -->
+            @if (session('success'))
+                <div id="success-alert" class="mb-6 flex w-4/5 items-center gap-4 rounded-xl border border-green-200 bg-green-50 p-4 text-green-800 shadow-sm transition-opacity duration-500">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-600">
+                        <!-- Icon Checkmark -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg">Laporan Terkirim!</h4>
+                        <p class="text-sm text-green-700">{{ session('success') }}</p>
+                    </div>
+                    <!-- Tombol Close Manual -->
+                    <button onclick="document.getElementById('success-alert').remove()" class="ml-auto text-green-500 hover:text-green-700 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            @endif
+            <!-- tambahan -->
+
             <form action="{{ route('surveyAlergi.post') }}" method="POST"
                 class="flex w-4/5 flex-col rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
                 @csrf
@@ -70,6 +93,21 @@
             </form>
         </div>
     </div>
+
+    <!-- hapus notifikasi -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const alertBox = document.getElementById('success-alert');
+            if (alertBox) {
+                setTimeout(() => {
+                    alertBox.style.opacity = '0'; 
+                    setTimeout(() => {
+                        alertBox.remove();
+                    }, 500);
+                }, 3000);
+            }
+        });
+    </script>
 </body>
 
 </html>

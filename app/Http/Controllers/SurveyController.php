@@ -65,6 +65,7 @@ class SurveyController extends Controller
             'allergy' => $allergy,
         ]);
 
+        return redirect()->back()->with('success', 'Data alergi berhasil disimpan!');
         return redirect()->route('surveyAlergi');
     }
 }
