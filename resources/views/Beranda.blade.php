@@ -15,7 +15,7 @@
         <x-layout />
 
         <div class="flex w-full flex-col items-center py-10" id="school-list">
-            <h3 class="mb-6 ml-[10%] self-start text-4xl font-bold text-slate-900">Beranda</h3>
+            <h2 class="mb-6 ml-[10%] self-start text-4xl font-bold text-slate-900">Beranda</h2>
 
             @foreach ($schools as $school)
                 <div
