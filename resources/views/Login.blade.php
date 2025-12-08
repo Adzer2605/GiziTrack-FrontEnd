@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login | GiziTrack</title>
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  @vite(['resources/css/app.css', 'resources/js/app.tsx'])
 </head>
 
 <body class="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#B2EBF2] to-[#B2DFDB] font-sans">
 
   <div class="flex w-full max-w-[400px] flex-col items-center rounded-[20px] bg-white px-8 py-10 shadow-[0_4px_15px_rgba(0,0,0,0.1)]">
-    <img src="{{ asset('images/GiziTrackLogo.png') }}" alt="Logo GiziTrack" class="mb-2 w-20 object-contain">
+    <img src="{{ secure_asset('images/GiziTrackLogo.png') }}" alt="Logo GiziTrack" class="mb-2 w-20 object-contain">
     <div class="mb-1 text-[22px] font-bold text-black">Gizi Track</div>
     <div class="mb-8 text-[28px] font-extrabold text-black">Login</div>
 

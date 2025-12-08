@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register | GiziTrack</title>
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  @vite(['resources/css/app.css', 'resources/js/app.tsx'])
 </head>
 <body class="flex min-h-screen w-full flex-col md:flex-row">
   <!-- Left Section (Form) -->
