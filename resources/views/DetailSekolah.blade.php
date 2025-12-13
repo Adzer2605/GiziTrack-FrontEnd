@@ -90,8 +90,9 @@
     </div>
 
     <script>
+        const schoolId = window.location.pathname.split('/').pop();
         document.addEventListener("DOMContentLoaded", function () {
-            fetch(`{{ config('app.backend_url') }}/api/school/{{ $id }}`, { credentials: 'include' })
+            fetch(`{{ config('app.backend_url') }}/api/school/` + schoolId, { credentials: 'include' })
                 .then(res => res.json())
                 .then(result => {
                     const data = result.data;
@@ -112,7 +113,6 @@
         const fileInput = document.getElementById('logoInput');
         const logoPreview = document.getElementById('schoolLogo');
         const form = document.getElementById('schoolForm');
-        const schoolId = "{{$id}}";
 
         fileInput.addEventListener('change', e => {
             const file = e.target.files[0];
@@ -139,7 +139,7 @@
                 try {
                     formData.append('_method', 'PUT');
 
-                    const response = await fetch(`{{ config('app.backend_url') }}/api/school/${schoolId}`, {
+                    const response = await fetch(`{{ config('app.backend_url') }}/api/school/` + schoolId, {
                         method: 'POST',
                         headers: {
                             'Accept': 'application/json',

@@ -16,7 +16,7 @@
     <div class="mb-1 text-[22px] font-bold text-black">Gizi Track</div>
     <div class="mb-8 text-[28px] font-extrabold text-black">Login</div>
 
-    <form id="loginForm" action="{{ route('login.post') }}" method="POST" class="flex w-full flex-col">
+    <form id="loginForm" method="POST" class="flex w-full flex-col">
       @csrf
 
       <label class="mb-2 ml-1 text-sm font-bold text-gray-800">Masukkan Username</label>
@@ -63,7 +63,7 @@
           const data = await response.json();
 
           if (response.ok) {
-            this.submit();
+            window.location.href = "/beranda";
           } else {
             alert(data.message || 'Login gagal di server backend');
             btn.innerText = originalText;
