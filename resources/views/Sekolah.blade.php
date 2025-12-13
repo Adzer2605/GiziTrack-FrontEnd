@@ -27,14 +27,19 @@
             </div>
 
             <div class="grid w-4/5 grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" id="school-grid">
-                <!-- School cards will be populated here -->
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            fetch(`/api/sekolah`)
+            fetch(`{{ config('app.backend_url') }}/api/school`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
                 .then(res => res.json())
                 .then(result => {
                     const data = result.data;
@@ -45,7 +50,7 @@
                         container.innerHTML += `
                             <a href="/sekolah/${school.id}" class="group flex flex-col items-center rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-blue-200">
                                 <div class="mb-4 flex h-32 w-full items-center justify-center rounded-lg bg-yellow-50 p-2">
-                                    <img src="${school.logo}" class="h-full w-full object-contain" alt="Logo ${school.name}">
+                                    <img src="${school.logo.startsWith('http') ? school.logo : '{{ config('app.backend_url') }}/' + school.logo.replace(/^\//, '')}" class="h-full w-full object-contain" alt="Logo ${school.name}">
                                 </div>
                                 <p class="text-base font-bold text-gray-800 group-hover:text-blue-600">${school.name}</p>
                             </a>
