@@ -46,58 +46,61 @@
         </button>
       </form>
 
-      <script>
-        document.getElementById('registerForm').addEventListener('submit', async function (e) {
-          e.preventDefault();
+<script>
+document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-          const btn = document.getElementById('submitBtn');
-          const originalText = btn.innerText;
-          btn.innerText = 'Loading...';
-          btn.disabled = true;
+  const btn = document.getElementById("submitBtn");
+  const originalText = btn.innerText;
+  btn.innerText = "Loading...";
+  btn.disabled = true;
 
-          const username = document.getElementById('username').value;
-          const password = document.getElementById('password').value;
-          const office = document.getElementById('office').value;
-          const employee = document.getElementById('employee').value;
-          const backendUrl = "{{ config('app.backend_url') }}";
+  const backendUrl = "{{ config('app.backend_url') }}";
 
-          try {
-            const response = await fetch(`${backendUrl}/api/register`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({
-                username,
-                password,
-                office,
-                employee
-              })
-            });
+  const payload = {
+    username: document.getElementById("username").value.trim(),
+    password: document.getElementById("password").value,
+    office: document.getElementById("office").value.trim(),
+    employee: document.getElementById("employee").value
+  };
 
-            const data = await response.json();
+  try {
+    const res = await fetch(`${backendUrl}/api/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
 
-            if (response.ok) {
-              alert('Registrasi berhasil! Silakan login.');
-              window.location.href = "{{ route('login') }}";
-            } else {
-              let message = data.message || 'Registrasi gagal';
-              if (data.errors) {
-                message += '\n' + Object.values(data.errors).flat().join('\n');
-              }
-              alert(message);
-              btn.innerText = originalText;
-              btn.disabled = false;
-            }
-          } catch (error) {
-            console.error('Error:', error);
-            alert('Gagal menghubungi server backend');
-            btn.innerText = originalText;
-            btn.disabled = false;
-          }
-        });
-      </script>
+    const json = await res.json();
+
+    if (!res.ok) {
+      let msg = json.message || "Registrasi gagal";
+
+      if (json.errors) {
+        msg += "\n\n" + Object.values(json.errors).flat().join("\n");
+      }
+
+      alert(msg);
+      btn.innerText = originalText;
+      btn.disabled = false;
+      return;
+    }
+
+    alert("Registrasi berhasil! Silakan login.");
+    location.href = "{{ route('login') }}";
+
+  } catch (err) {
+    console.error(err);
+    alert("Gagal menghubungi server backend");
+    btn.innerText = originalText;
+    btn.disabled = false;
+  }
+});
+</script>
+
 
       <div class="mt-6 text-sm text-white">
         Sudah punya akun? <a href="{{ route('login') }}" class="font-bold text-blue-400 hover:underline">Login

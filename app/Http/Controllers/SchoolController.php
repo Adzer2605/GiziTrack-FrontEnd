@@ -16,6 +16,10 @@ class SchoolController extends Controller
 
         return view('Sekolah');
     }
+    public function showTambahSekolah() {
+
+        return view('TambahSekolah');
+    }
 
     public function showDetailSekolah($id)
     {

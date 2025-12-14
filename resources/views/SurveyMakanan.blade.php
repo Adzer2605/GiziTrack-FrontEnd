@@ -95,115 +95,149 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", async () => {
-            const schoolSelect = document.getElementById('schoolSelect');
-            const surveyForm = document.getElementById('surveyForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const backendUrl = "{{ config('app.backend_url') }}";
+    document.addEventListener("DOMContentLoaded", async () => {
+    const backendUrl = "{{ config('app.backend_url') }}";
+    const schoolSelect = document.getElementById("schoolSelect");
+    const surveyForm = document.getElementById("surveyForm");
+    const submitBtn = document.getElementById("submitBtn");
 
-            try {
-                const response = await fetch(`${backendUrl}/api/school`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' },
-                    credentials: 'include'
-                });
-                const json = await response.json();
+    function getToken() {
+        const m = document.cookie.match(/api_token=([^;]+)/);
+        return m ? m[1] : null;
+    }
 
-                schoolSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
-
-                if (json.data && Array.isArray(json.data)) {
-                    json.data.forEach(school => {
-                        const option = document.createElement('option');
-                        option.value = school.name;
-                        option.textContent = school.name;
-                        schoolSelect.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Gagal memuat sekolah:', error);
-                schoolSelect.innerHTML = '<option value="">Gagal memuat data</option>';
-            }
-
-            surveyForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const originalText = submitBtn.innerText;
-                submitBtn.innerText = 'Mengirim...';
-                submitBtn.disabled = true;
-
-                const school = schoolSelect.value;
-
-                const foods = [];
-                const totals = [];
-                let hasError = false;
-
-                const foodInputs = document.querySelectorAll('.food-name');
-                const totalInputs = document.querySelectorAll('.food-total');
-
-                for (let i = 0; i < foodInputs.length; i++) {
-                    const name = foodInputs[i].value.trim();
-                    const total = totalInputs[i].value.trim();
-
-                    if (name && total) {
-                        foods.push(name);
-                        totals.push(total);
-                    } else if (name || total) {
-                        hasError = true;
-                        break;
-                    }
-                }
-
-                if (hasError) {
-                    alert('Harap lengkapi Nama Makanan DAN Jumlah Porsi untuk setiap baris yang diisi.');
-                    submitBtn.innerText = originalText;
-                    submitBtn.disabled = false;
-                    return;
-                }
-
-                if (foods.length === 0) {
-                    alert('Harap isi setidaknya satu data makanan.');
-                    submitBtn.innerText = originalText;
-                    submitBtn.disabled = false;
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${backendUrl}/api/survey/food`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify({
-                            school,
-                            food: foods,
-                            total: totals
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        alert('Laporan berhasil dikirim!');
-                        surveyForm.reset();
-                    } else {
-                        let message = data.message || 'Gagal mengirim laporan';
-                        if (data.errors) {
-                            message += '\n' + Object.values(data.errors).flat().join('\n');
-                        }
-                        alert(message);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan jaringan');
-                } finally {
-                    submitBtn.innerText = originalText;
-                    submitBtn.disabled = false;
-                }
-            });
+    try {
+        const res = await fetch(`${backendUrl}/api/school`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Accept": "application/json",
+            ...(getToken() ? { "Authorization": "Bearer " + getToken() } : {})
+        }
         });
+
+        if (res.status === 401) {
+        location.href = "/login";
+        return;
+        }
+
+        if (!res.ok) {
+        throw new Error("Gagal mengambil data sekolah");
+        }
+
+        const json = await res.json();
+        const schools = Array.isArray(json.data) ? json.data : [];
+
+        schoolSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+
+        if (schools.length === 0) {
+        schoolSelect.innerHTML =
+            '<option value="">Tidak ada data sekolah</option>';
+        return;
+        }
+
+        schools.forEach(school => {
+        const option = document.createElement("option");
+        option.value = school.name;       // ✅ VALUE = NAMA SEKOLAH
+        option.textContent = school.name;
+        schoolSelect.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error("Gagal memuat sekolah:", err);
+        schoolSelect.innerHTML =
+        '<option value="">Gagal memuat data</option>';
+    }
+
+    surveyForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const school = schoolSelect.value;
+        if (!school) {
+        alert("Silakan pilih sekolah terlebih dahulu");
+        return;
+        }
+
+        const foods = [];
+        const totals = [];
+        let hasError = false;
+
+        const foodInputs = document.querySelectorAll(".food-name");
+        const totalInputs = document.querySelectorAll(".food-total");
+
+        for (let i = 0; i < foodInputs.length; i++) {
+        const name = foodInputs[i].value.trim();
+        const total = totalInputs[i].value.trim();
+
+        if (name && total) {
+            foods.push(name);
+            totals.push(total);
+        } else if (name || total) {
+            hasError = true;
+            break;
+        }
+        }
+
+        if (hasError) {
+        alert("Harap lengkapi Nama Makanan DAN Jumlah Porsi pada setiap baris.");
+        return;
+        }
+
+        if (foods.length === 0) {
+        alert("Harap isi setidaknya satu data makanan.");
+        return;
+        }
+
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = "Mengirim...";
+        submitBtn.disabled = true;
+
+        try {
+        const res = await fetch(`${backendUrl}/api/survey/food`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            ...(getToken() ? { "Authorization": "Bearer " + getToken() } : {})
+            },
+            body: JSON.stringify({
+            school: school,  
+            food: foods,
+            total: totals
+            })
+        });
+
+        if (res.status === 401) {
+            location.href = "/login";
+            return;
+        }
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            let msg = json.message || "Gagal mengirim laporan";
+            if (json.errors) {
+            msg += "\n" + Object.values(json.errors).flat().join("\n");
+            }
+            alert(msg);
+            return;
+        }
+
+        alert("Laporan berhasil dikirim!");
+        surveyForm.reset();
+
+        } catch (err) {
+        console.error("Error:", err);
+        alert("Terjadi kesalahan jaringan");
+        } finally {
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+        }
+    });
+    });
     </script>
+
 </body>
 
 </html>

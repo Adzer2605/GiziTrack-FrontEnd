@@ -31,35 +31,76 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            fetch(`{{ config('app.backend_url') }}/api/school`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-                .then(res => res.json())
-                .then(result => {
-                    const data = result.data;
-                    const container = document.getElementById('school-grid');
-                    container.innerHTML = "";
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+    const backendUrl = "{{ config('app.backend_url') }}";
+    const container = document.getElementById("school-grid");
 
-                    data.forEach(school => {
-                        container.innerHTML += `
-                            <a href="/sekolah/${school.id}" class="group flex flex-col items-center rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-blue-200">
-                                <div class="mb-4 flex h-32 w-full items-center justify-center rounded-lg bg-yellow-50 p-2">
-                                    <img src="${school.logo.startsWith('http') ? school.logo : '{{ config('app.backend_url') }}/' + school.logo.replace(/^\//, '')}" class="h-full w-full object-contain" alt="Logo ${school.name}">
-                                </div>
-                                <p class="text-base font-bold text-gray-800 group-hover:text-blue-600">${school.name}</p>
-                            </a>
-                        `;
-                    });
-                })
-                .catch(err => console.error("Fetch Error:", err));
+    function getToken() {
+        const m = document.cookie.match(/api_token=([^;]+)/);
+        return m ? m[1] : null;
+    }
+
+    try {
+        const res = await fetch(`${backendUrl}/api/school`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Accept": "application/json",
+            ...(getToken() ? { "Authorization": "Bearer " + getToken() } : {})
+        }
         });
-    </script>
+
+        if (res.status === 401) {
+        location.href = "/login";
+        return;
+        }
+
+        if (!res.ok) {
+        throw new Error("Gagal mengambil data sekolah");
+        }
+
+        const json = await res.json();
+        const data = Array.isArray(json.data) ? json.data : [];
+
+        container.innerHTML = "";
+
+        if (data.length === 0) {
+        container.innerHTML =
+            '<p class="col-span-full text-center text-gray-500">Tidak ada data sekolah.</p>';
+        return;
+        }
+
+        data.forEach(school => {
+        const logoSrc = school.logo
+            ? (school.logo.startsWith("http")
+                ? school.logo
+                : `${backendUrl}/${school.logo.replace(/^\/+/, "")}`)
+            : `${backendUrl}/images/placeholder.png`;
+
+        container.insertAdjacentHTML("beforeend", `
+            <a href="/sekolah/${school.id}"
+            class="group flex flex-col items-center rounded-xl border border-gray-200 bg-white p-4 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-blue-200">
+            <div class="mb-4 flex h-32 w-full items-center justify-center rounded-lg bg-yellow-50 p-2">
+                <img src="${logoSrc}"
+                    class="h-full w-full object-contain"
+                    alt="Logo ${school.name ?? ''}">
+            </div>
+            <p class="text-base font-bold text-gray-800 group-hover:text-blue-600">
+                ${school.name ?? "-"}
+            </p>
+            </a>
+        `);
+        });
+
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        container.innerHTML =
+        '<p class="col-span-full text-center text-red-600">Gagal memuat data sekolah.</p>';
+    }
+    });
+</script>
+
 </body>
 
 </html>

@@ -56,16 +56,16 @@
               'Content-Type': 'application/json',
               'Accept': 'application/json'
             },
-            credentials: 'include',
             body: JSON.stringify({ username, password })
           });
 
-          const data = await response.json();
+          const result = await response.json();
 
           if (response.ok) {
+            document.cookie = `api_token=${result.data.api_token}; path=/`;
             window.location.href = "/beranda";
           } else {
-            alert(data.message || 'Login gagal di server backend');
+            alert(result.data.message || 'Login gagal di server backend');
             btn.innerText = originalText;
             btn.disabled = false;
           }

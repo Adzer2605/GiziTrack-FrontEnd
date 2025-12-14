@@ -33,60 +33,77 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", async () => {
-            const officeNameEl = document.getElementById('office-name');
-            const employeeListEl = document.getElementById('employee-list');
-            const backendUrl = "{{ config('app.backend_url') }}";
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+    const officeNameEl = document.getElementById("office-name");
+    const employeeListEl = document.getElementById("employee-list");
+    const backendUrl = "{{ config('app.backend_url') }}";
 
-            try {
-                const response = await fetch(`${backendUrl}/api/profile`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    },
-                    credentials: 'include'
-                });
+    function getToken() {
+        const match = document.cookie.match(/api_token=([^;]+)/);
+        return match ? match[1] : null;
+    }
 
-                if (!response.ok) {
-                    throw new Error('Gagal mengambil data profil');
-                }
-
-                const json = await response.json();
-                const data = json.data;
-
-                officeNameEl.textContent = data.office || '-';
-
-                employeeListEl.innerHTML = '';
-                if (data.employees && data.employees.length > 0) {
-                    data.employees.forEach(employee => {
-                        const card = document.createElement('div');
-                        card.className = "flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md";
-
-                        card.innerHTML = `
-                            <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-                                <span class="text-sm font-medium text-gray-500">ID Karyawan</span>
-                                <span class="font-bold text-gray-900">${employee.id}</span>
-                            </div>
-                            <div class="flex items-center justify-between pt-2">
-                                <span class="text-sm font-medium text-gray-500">Nama Karyawan</span>
-                                <span class="text-lg font-bold text-gray-900">${employee.name}</span>
-                            </div>
-                        `;
-                        employeeListEl.appendChild(card);
-                    });
-                } else {
-                    employeeListEl.innerHTML = '<p class="text-center text-gray-500">Tidak ada data karyawan.</p>';
-                }
-
-            } catch (error) {
-                console.error('Error:', error);
-                officeNameEl.textContent = 'Gagal memuat data';
-                officeNameEl.classList.add('text-red-600', 'bg-red-100');
-                officeNameEl.classList.remove('text-blue-900', 'bg-blue-100');
-            }
+    try {
+        const res = await fetch(`${backendUrl}/api/profile`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Accept": "application/json",
+            ...(getToken() ? { "Authorization": "Bearer " + getToken() } : {})
+        }
         });
-    </script>
+
+        if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+        }
+
+        if (!res.ok) {
+        throw new Error("Gagal mengambil data profil");
+        }
+
+        const json = await res.json();
+        const data = json.data ?? {};
+
+        officeNameEl.textContent = data.office || "-";
+        officeNameEl.classList.remove("text-red-600", "bg-red-100");
+        officeNameEl.classList.add("text-blue-900", "bg-blue-100");
+
+        employeeListEl.innerHTML = "";
+
+        if (Array.isArray(data.employees) && data.employees.length > 0) {
+        data.employees.forEach(emp => {
+            const card = document.createElement("div");
+            card.className =
+            "flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md";
+
+            card.innerHTML = `
+            <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                <span class="text-sm font-medium text-gray-500">ID Karyawan</span>
+                <span class="font-bold text-gray-900">${emp.id}</span>
+            </div>
+            <div class="flex items-center justify-between pt-2">
+                <span class="text-sm font-medium text-gray-500">Nama Karyawan</span>
+                <span class="text-lg font-bold text-gray-900">${emp.name}</span>
+            </div>
+            `;
+
+            employeeListEl.appendChild(card);
+        });
+        } else {
+        employeeListEl.innerHTML =
+            '<p class="text-center text-gray-500">Tidak ada data karyawan.</p>';
+        }
+
+    } catch (err) {
+        console.error(err);
+        officeNameEl.textContent = "Gagal memuat data";
+        officeNameEl.classList.remove("text-blue-900", "bg-blue-100");
+        officeNameEl.classList.add("text-red-600", "bg-red-100");
+    }
+    });
+</script>
 </body>
 
 </html>

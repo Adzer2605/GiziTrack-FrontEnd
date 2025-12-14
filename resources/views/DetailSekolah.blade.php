@@ -90,105 +90,124 @@
     </div>
 
     <script>
-        const schoolId = window.location.pathname.split('/').pop();
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch(`{{ config('app.backend_url') }}/api/school/` + schoolId, { credentials: 'include' })
-                .then(res => res.json())
-                .then(result => {
-                    const data = result.data;
+    const backendUrl = "{{ config('app.backend_url') }}";
+    const schoolId = location.pathname.split('/').pop();
 
-                    document.getElementById('schoolLogo').src = data.logo.startsWith('http') ? data.logo : `{{ config('app.backend_url') }}/${data.logo.replace(/^\//, '')}`;
-                    document.getElementById('name').value = data.name;
-                    document.getElementById('location').value = data.location;
-                    document.getElementById('total_student').value = data.total_student;
-                    document.getElementById('total_meal').value = data.total_meal;
-                    document.getElementById('type_allergy').value = data.type_allergy || '-'; // Handle null
-                })
-                .catch(err => console.error("Error loading data:", err));
+    function getToken() {
+    const match = document.cookie.match(/api_token=([^;]+)/);
+    return match ? match[1] : null;
+    }
+
+    function apiFetch(url, options = {}) {
+    return fetch(url, {
+        ...options,
+        headers: {
+        ...(options.headers || {}),
+        "Accept": "application/json",
+        ...(getToken() ? { "Authorization": "Bearer " + getToken() } : {})
+        }
+    });
+    }
+
+    const inputs = document.querySelectorAll("#schoolForm input:not([type=file])");
+    const fileInput = document.getElementById("logoInput");
+    const logo = document.getElementById("schoolLogo");
+    const editBtn = document.getElementById("editBtn");
+    const deleteBtn = document.getElementById("deleteBtn");
+    const form = document.getElementById("schoolForm");
+
+    document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const res = await apiFetch(`${backendUrl}/api/school/${schoolId}`);
+
+        if (res.status === 401) {
+        location.href = "/login";
+        return;
+        }
+
+        const json = await res.json();
+        const data = json.data;
+
+        document.getElementById("schoolLogo").src =
+        data.logo.startsWith("http")
+            ? data.logo
+            : `${backendUrl}/${data.logo.replace(/^\/+/, "")}`;
+
+        document.getElementById("name").value = data.name ?? "";
+        document.getElementById("location").value = data.location ?? "";
+        document.getElementById("total_student").value = data.total_student ?? 0;
+        document.getElementById("total_meal").value = data.total_meal ?? 0;
+        document.getElementById("type_allergy").value = data.type_allergy ?? "";
+
+    } catch (err) {
+        console.error(err);
+        alert("Gagal memuat data sekolah");
+    }
+    });
+
+
+    fileInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => logo.src = reader.result;
+    reader.readAsDataURL(file);
+    });
+
+    editBtn.addEventListener("click", async () => {
+    const isEditing = editBtn.dataset.editing === "1";
+
+    if (!isEditing) {
+        inputs.forEach(i => i.disabled = false);
+        fileInput.disabled = false;
+        editBtn.textContent = "Simpan Perubahan";
+        editBtn.dataset.editing = "1";
+        return;
+    }
+
+    const formData = new FormData(form);
+    formData.append("_method", "PUT");
+
+    try {
+        const res = await apiFetch(`${backendUrl}/api/school/${schoolId}`, {
+        method: "POST",
+        body: formData
         });
 
-        const editBtn = document.getElementById('editBtn');
-        const deleteBtn = document.getElementById('deleteBtn');
-        const inputs = document.querySelectorAll('#schoolForm input:not([type=file])');
-        const fileInput = document.getElementById('logoInput');
-        const logoPreview = document.getElementById('schoolLogo');
-        const form = document.getElementById('schoolForm');
+        if (!res.ok) {
+        alert("Gagal menyimpan perubahan");
+        return;
+        }
 
-        fileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = () => logoPreview.src = reader.result;
-                reader.readAsDataURL(file);
-            }
+        alert("Data berhasil diperbarui");
+        location.reload();
+    } catch (err) {
+        alert("Terjadi kesalahan jaringan");
+    }
+    });
+
+    deleteBtn.addEventListener("click", async () => {
+    if (!confirm("Yakin ingin menghapus sekolah ini?")) return;
+
+    try {
+        const res = await apiFetch(`${backendUrl}/api/school/${schoolId}`, {
+        method: "DELETE"
         });
 
-        editBtn.addEventListener('click', async () => {
-            if (editBtn.textContent.trim() === 'Edit Data') {
-                inputs.forEach(i => {
-                    i.removeAttribute('disabled');
-                    i.classList.remove('bg-gray-50');
-                });
-                fileInput.removeAttribute('disabled');
-                editBtn.textContent = 'Simpan Perubahan';
-                editBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-400', 'text-slate-900');
-                editBtn.classList.add('bg-green-600', 'hover:bg-green-700', 'text-white', 'shadow-lg');
-            } else {
-                const formData = new FormData(form);
+        if (!res.ok) {
+        alert("Gagal menghapus data");
+        return;
+        }
 
-                try {
-                    formData.append('_method', 'PUT');
-
-                    const response = await fetch(`{{ config('app.backend_url') }}/api/school/` + schoolId, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json',
-                        },
-                        credentials: 'include',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        alert('Data berhasil diperbarui!');
-
-                        inputs.forEach(i => {
-                            i.setAttribute('disabled', true);
-                            i.classList.add('bg-gray-50');
-                        });
-                        fileInput.setAttribute('disabled', true);
-
-                        editBtn.textContent = 'Edit Data';
-                        editBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-400', 'text-slate-900');
-                        editBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'text-white', 'shadow-lg');
-                    } else {
-                        alert('Gagal menyimpan data. Cek inputan kembali.');
-                    }
-                } catch (e) {
-                    alert('Terjadi kesalahan jaringan: ' + e.message);
-                }
-            }
-        });
-
-        deleteBtn.addEventListener('click', async () => {
-            if (confirm('Yakin ingin menghapus sekolah ini secara permanen?')) {
-                try {
-                    const response = await fetch(`{{ config('app.backend_url') }}/api/school/${schoolId}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
-                    });
-
-                    if (response.ok) {
-                        alert('Sekolah berhasil dihapus.');
-                        window.location.href = '/sekolah';
-                    } else {
-                        alert('Gagal menghapus data.');
-                    }
-                } catch (e) {
-                    alert('Error: ' + e.message);
-                }
-            }
-        });
+        alert("Sekolah berhasil dihapus");
+        location.href = "/sekolah";
+    } catch (err) {
+        alert("Terjadi kesalahan jaringan");
+    }
+    });
     </script>
+
 </body>
 
 </html>

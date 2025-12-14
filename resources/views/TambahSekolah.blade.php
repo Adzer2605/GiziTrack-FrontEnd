@@ -105,76 +105,99 @@
         </div>
     </div>
 
-    <script>
-        const fileInput = document.getElementById('logoInput');
-        const previewLogo = document.getElementById('previewLogo');
-        const form = document.getElementById('addSchoolForm');
-        const submitBtn = form.querySelector('button[type="submit"]');
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const fileInput   = document.getElementById("logoInput");
+  const previewLogo = document.getElementById("previewLogo");
+  const form        = document.getElementById("addSchoolForm");
+  const submitBtn   = form.querySelector('button[type="submit"]');
+  const backendUrl  = "{{ config('app.backend_url') }}";
 
-        fileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) {
-                if (!file.type.startsWith('image/')) {
-                    alert('File harus berupa gambar (JPG, PNG, dll)!');
-                    fileInput.value = '';
-                    previewLogo.src = "{{ asset('uploads/logo/default.jpg') }}";
-                    return;
-                }
+  function getToken() {
+    const m = document.cookie.match(/api_token=([^;]+)/);
+    return m ? m[1] : null;
+  }
 
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Ukuran gambar maksimal 2MB!');
-                    fileInput.value = '';
-                    return;
-                }
+  /* ======================
+     PREVIEW & VALIDASI LOGO
+  ====================== */
+  fileInput.addEventListener("change", e => {
+    const file = e.target.files[0];
 
-                const reader = new FileReader();
-                reader.onload = () => previewLogo.src = reader.result;
-                reader.readAsDataURL(file);
-            }
-        });
+    if (!file) return;
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+    if (!file.type.startsWith("image/")) {
+      alert("File harus berupa gambar (JPG, PNG, dll)");
+      fileInput.value = "";
+      previewLogo.src = "{{ asset('uploads/logo/default.jpg') }}";
+      return;
+    }
 
-            const originalText = submitBtn.innerText;
-            submitBtn.innerText = 'Menyimpan...';
-            submitBtn.disabled = true;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Ukuran gambar maksimal 2MB");
+      fileInput.value = "";
+      previewLogo.src = "{{ asset('uploads/logo/default.jpg') }}";
+      return;
+    }
 
-            const formData = new FormData(form);
-            const backendUrl = "{{ config('app.backend_url') }}";
+    const reader = new FileReader();
+    reader.onload = () => previewLogo.src = reader.result;
+    reader.readAsDataURL(file);
+  });
 
-            try {
-                const response = await fetch(`${backendUrl}/api/school`, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                    },
-                    credentials: 'include',
-                    body: formData
-                });
+  /* ======================
+     SUBMIT FORM
+  ====================== */
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
 
-                const data = await response.json();
+    const originalText = submitBtn.innerText;
+    submitBtn.innerText = "Menyimpan...";
+    submitBtn.disabled = true;
 
-                if (response.ok) {
-                    alert('Sekolah berhasil ditambahkan!');
-                    window.location.href = '/sekolah';
-                } else {
-                    let message = data.message || 'Gagal menyimpan data sekolah';
-                    if (data.errors) {
-                        message += '\n' + Object.values(data.errors).flat().join('\n');
-                    }
-                    alert(message);
-                    submitBtn.innerText = originalText;
-                    submitBtn.disabled = false;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan jaringan saat menghubungi server backend');
-                submitBtn.innerText = originalText;
-                submitBtn.disabled = false;
-            }
-        });
-    </script>
+    const formData = new FormData(form);
+
+    try {
+      const res = await fetch(`${backendUrl}/api/school`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Accept": "application/json",
+          ...(getToken() ? { "Authorization": "Bearer " + getToken() } : {})
+        },
+        body: formData
+      });
+
+      if (res.status === 401) {
+        location.href = "/login";
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        let msg = data.message || "Gagal menyimpan data sekolah";
+        if (data.errors) {
+          msg += "\n" + Object.values(data.errors).flat().join("\n");
+        }
+        alert(msg);
+        return;
+      }
+
+      alert("Sekolah berhasil ditambahkan!");
+      window.location.href = "/sekolah";
+
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Terjadi kesalahan jaringan saat menghubungi server backend");
+    } finally {
+      submitBtn.innerText = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+});
+</script>
+
 </body>
 
 </html>

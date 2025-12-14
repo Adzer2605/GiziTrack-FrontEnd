@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Survey Alergi | GiziTrack</title>
-    @vite(['resources/css/app.css', 'resources/js/app.tsx'])
+    @vite(['resources/css/app.css'])
 </head>
 
 <body class="flex min-h-screen flex-col bg-gray-50 font-sans">
@@ -67,79 +67,120 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", async () => {
-            const schoolSelect = document.getElementById('schoolSelect');
-            const surveyForm = document.getElementById('surveyForm');
-            const submitBtn = document.getElementById('submitBtn');
-            const backendUrl = "{{ config('app.backend_url') }}";
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+    const backendUrl = "{{ config('app.backend_url') }}";
+    const schoolSelect = document.getElementById("schoolSelect");
+    const surveyForm = document.getElementById("surveyForm");
+    const submitBtn = document.getElementById("submitBtn");
 
-            try {
-                const response = await fetch(`${backendUrl}/api/school`, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' },
-                    credentials: 'include'
-                });
-                const json = await response.json();
+    function getToken() {
+        const m = document.cookie.match(/api_token=([^;]+)/);
+        return m ? m[1] : null;
+    }
 
-                schoolSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
-
-                if (json.data && Array.isArray(json.data)) {
-                    json.data.forEach(school => {
-                        const option = document.createElement('option');
-                        option.value = school.name;
-                        option.textContent = school.name;
-                        schoolSelect.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Gagal memuat sekolah:', error);
-                schoolSelect.innerHTML = '<option value="">Gagal memuat data</option>';
-            }
-
-            surveyForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const originalText = submitBtn.innerText;
-                submitBtn.innerText = 'Mengirim...';
-                submitBtn.disabled = true;
-
-                const school = schoolSelect.value;
-                const allergy = document.getElementById('allergyInput').value;
-
-                try {
-                    const response = await fetch(`${backendUrl}/api/survey/allergy`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        credentials: 'include',
-                        body: JSON.stringify({ school, allergy })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        alert('Laporan berhasil dikirim!');
-                        surveyForm.reset();
-                    } else {
-                        let message = data.message || 'Gagal mengirim laporan';
-                        if (data.errors) {
-                            message += '\n' + Object.values(data.errors).flat().join('\n');
-                        }
-                        alert(message);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan jaringan');
-                } finally {
-                    submitBtn.innerText = originalText;
-                    submitBtn.disabled = false;
-                }
-            });
+    try {
+        const res = await fetch(`${backendUrl}/api/school`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Accept": "application/json",
+            ...(getToken() ? { "Authorization": "Bearer " + getToken() } : {})
+        }
         });
-    </script>
+
+        if (res.status === 401) {
+        location.href = "/login";
+        return;
+        }
+
+        if (!res.ok) {
+        throw new Error("Gagal mengambil data sekolah");
+        }
+
+        const json = await res.json();
+        const schools = Array.isArray(json.data) ? json.data : [];
+
+        schoolSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+
+        if (schools.length === 0) {
+        schoolSelect.innerHTML =
+            '<option value="">Tidak ada data sekolah</option>';
+        return;
+        }
+
+        schools.forEach(school => {
+        const opt = document.createElement("option");
+        opt.value = school.name;        // ✅ PAKAI ID
+        opt.textContent = school.name;
+        schoolSelect.appendChild(opt);
+        });
+
+    } catch (err) {
+        console.error("Gagal memuat sekolah:", err);
+        schoolSelect.innerHTML =
+        '<option value="">Gagal memuat data</option>';
+    }
+
+    surveyForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const schoolId = schoolSelect.value;
+        const allergy  = document.getElementById("allergyInput").value.trim();
+
+        if (!schoolId) {
+        alert("Silakan pilih sekolah terlebih dahulu");
+        return;
+        }
+
+        const originalText = submitBtn.innerText;
+        submitBtn.innerText = "Mengirim...";
+        submitBtn.disabled = true;
+
+        try {
+        const res = await fetch(`${backendUrl}/api/survey/allergy`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            ...(getToken() ? { "Authorization": "Bearer " + getToken() } : {})
+            },
+            body: JSON.stringify({
+            school: schoolId,
+            allergy: allergy
+            })
+        });
+
+        if (res.status === 401) {
+            location.href = "/login";
+            return;
+        }
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            let msg = json.message || "Gagal mengirim laporan";
+            if (json.errors) {
+            msg += "\n" + Object.values(json.errors).flat().join("\n");
+            }
+            alert(msg);
+            return;
+        }
+
+        alert("Laporan berhasil dikirim!");
+        surveyForm.reset();
+
+        } catch (err) {
+        console.error("Error:", err);
+        alert("Terjadi kesalahan jaringan");
+        } finally {
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
+        }
+    });
+    });
+</script>
 </body>
 
 </html>
